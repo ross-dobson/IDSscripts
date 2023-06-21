@@ -102,10 +102,10 @@ def copy_requested_fits(day, detector, obstype):
         intf = path_int_yyyymmdd / f.name
         cwdf = path_cwd_yyyymmdd / f.name
         if not cwdf.exists():
-            print(f"{i}/{len_fits_final} Copying {intf} to {cwdf}")
+            print(f"{i+1}/{len_fits_final} Copying {intf} to {cwdf}")
             shutil.copyfile(intf, cwdf)
         else:
-            print(f"{i}/{len_fits_final} File {cwdf} already exists")
+            print(f"{i+1}/{len_fits_final} File {cwdf} already exists")
     return
 
 def main():
