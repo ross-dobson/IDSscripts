@@ -2,36 +2,43 @@
 
 import sys
 from datetime import date, timedelta
-
-if len(sys.argv) != 3:
-    raise Exception("Usage: get_ids_fit.py detector obstype YYYYMMDD")
-
-arg_detector = sys.argv[1]
-arg_obstype = sys.argv[2]
-arg_date = sys.argv[3]
-
-
-def date_range_list(start_date, end_date):
-    # Return list of datetime.date objects (inclusive) between start_date and end_date (inclusive).
-    date_list = []
-    curr_date = start_date
-    while curr_date <= end_date:
-        date_list.append(curr_date)
-        curr_date += timedelta(days=1)
-    return date_list
-
-start_date = date(year=int(start_date_string[0:4]), month=int(start_date_string[4:6]), day=int(start_date_string[6:8]))
-stop_date = date(year=int(stop_date_string[0:4]), month=int(stop_date_string[4:6]), day=int(stop_date_string[6:8]))
-date_list = date_range_list(start_date, stop_date)
-
-#for d in date_list:
-#    print(d.strftime("%Y%m%d"))
-
-# step 2: make a directory for this day. copy all the fits files into it
 from pathlib import Path
 import shutil
 
 obsdata_inta = Path("/obsdata/inta")
+
+# 1: Check command-line arguments
+if len(sys.argv) != 4:
+    print("Usage: get_ids_fit.py detector obstype YYYYMMDD")
+    sys.exit(1)
+
+if not (sys.argv[1] =="EEV10" or sys.argv[1] =="REDPLUS2" or sys.argv[1] =="BOTH"):
+    raise ValueError("Detector type can be EEV10, RED+2 or BOTH")
+arg_detector = sys.argv[1]
+
+if not (sys.argv[2] == "ARC" or sys.argv[2] == "BIAS" or sys.argv[2] == "DARK"
+    or sys.argv[2] == "FLASH" or sys.argv[2] == "FLAT" or sys.argv[2] == "SKY"
+    or sys.argv[2] == "TARGET"):
+    raise ValueError("Obstype can be ARC, BIAS, DARK, FLASH, FLAT, SKY, TARGET or ALL.")
+arg_obstype = sys.argv[2]
+
+if not (sys.argv[3] == "ALL"):
+    bool_all_dates = False
+    try:
+        arg_date = sys.argv[3]
+        yyyymmdd = date(year=int(arg_date[0:4]), month=int(arg_date[4:6]), day=int(arg_date[6:8]))
+    except:
+        raise ValueError("Date can be in format YYYYMMDD, or ALL")
+else:
+    arg_date = sys.argv[3]
+    bool_all_dates = True
+
+
+print(sys.argv)
+print(arg_detector, arg_obstype, arg_date)
+sys.exit(0)
+
+# step 2: make a directory for this day. copy all the fits files into it
 
 for d in date_list:
     d_str = d.strftime("%Y%m%d")
