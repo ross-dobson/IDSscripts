@@ -66,16 +66,13 @@ def copy_requested_fits(day, detector, obstype):
         try:
             hdr0_instrume = hdr0["INSTRUME"]
         except:
-            print("DEBUG no hdr0 instrume", f)
             continue  # probably glance, scratch, AG0 image, ignore
         if not hdr0_instrume == "IDS":
-            print(f"{f}: instrument type {hdr0_instrume}, skipping")
-            continue  # probably WFC image (or maybe visitor image), ignore
+            continue  # probably WFC image (or maybe visitor instrument), ignore
 
         # check it matches Obstype and Detector
         hdr0_obstype = hdr0["OBSTYPE"]
         hdr0_detector = hdr0["DETECTOR"]
-        print(f"{f}, requested obstype {obstype} detector {detector}, found {hdr0_obstype} {hdr0_detector}")
         if obstype in ("ALL", hdr0_obstype):
             if detector == "BOTH":
                 if hdr0_detector in ("REDPLUS2", "EEV10"):
@@ -100,14 +97,15 @@ def copy_requested_fits(day, detector, obstype):
         print(f"{path_cwd_yyyymmdd} already exists")
 
     # copy the fits files from /obsdata/inta/yyyymmdd to ./yyyymmdd
-    for f in list_fits_final:
+    len_fits_final = len(list_fits_final)
+    for i,f in enumerate(list_fits_final):
         intf = path_int_yyyymmdd / f.name
         cwdf = path_cwd_yyyymmdd / f.name
         if not cwdf.exists():
-            print(f"Copying {intf} to {cwdf}")
+            print(f"{i}/{len_fits_final} Copying {intf} to {cwdf}")
             shutil.copyfile(intf, cwdf)
         else:
-            print(f"File {cwdf} already exists")
+            print(f"{i}/{len_fits_final} File {cwdf} already exists")
     return
 
 def main():
@@ -145,23 +143,17 @@ def main():
           f"Date: {arg_date}\n")
 
     if not bool_all_dates:
-        print("DEBUG1")
         copy_requested_fits(arg_date, arg_detector, arg_obstype)
         sys.exit(0)
     elif bool_all_dates:
-        print("DEBUG2")
         # List all the directories in /obsdata/inta. From the paths, get the dir
         # name - this is in format yyyymmdd, so we can pass this into the function
         # as the day argument. We don't just glob for **/*.fit as it would be much
         # harder to copy in to (and if needed, mkdir) the local yyyymmdd directory.
         list_of_int_dirs = [x for x in path_obsdata_inta.iterdir() if x.is_dir()]
-        print("DEBUG3", list_of_int_dirs)
         list_days = [d.parts[-1] for d in list_of_int_dirs]
-        print("DEBUG4", list_days)
         for yyyymmdd in list_days:
-            print("DEBUG5", yyyymmdd)
             if len(yyyymmdd) == 8:  # check dir name is yyyymmdd, not e.g. config
-                print("DEBUG6")
                 copy_requested_fits(yyyymmdd, arg_detector, arg_obstype)
     return
 
