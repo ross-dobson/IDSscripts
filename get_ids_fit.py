@@ -61,11 +61,21 @@ def copy_requested_fits(day, detector, obstype):
     for f in list_of_all_fits:
         hdul = fits.open(f)
         hdr0 = hdul[0].header
-        if not hdr0["INSTRUME"] == "IDS":
-            continue
+
+        # Check it is an IDS image
+        try:
+            hdr0_instrume = hdr0["INSTRUME"]
+        except:
+            print("DEBUG no hdr0 instrume", f)
+            continue  # probably glance, scratch, AG0 image, ignore
+        if not hdr0_instrume == "IDS":
+            print(f"{f}: instrument type {hdr0_instrume}, skipping")
+            continue  # probably WFC image (or maybe visitor image), ignore
+
+        # check it matches Obstype and Detector
         hdr0_obstype = hdr0["OBSTYPE"]
         hdr0_detector = hdr0["DETECTOR"]
-
+        print(f"{f}, requested obstype {obstype} detector {detector}, found {hdr0_obstype} {hdr0_detector}")
         if obstype in ("ALL", hdr0_obstype):
             if detector == "BOTH":
                 if hdr0_detector in ("REDPLUS2", "EEV10"):
@@ -73,13 +83,13 @@ def copy_requested_fits(day, detector, obstype):
             elif detector == hdr0_detector:
                 list_fits_final.append(f)
 
-    if len(list_fits_final) == 0:
+    if not list_fits_final:
         print(f"No fits files matching detector {detector}, obstype {obstype} "
               f"found for {day}")
         return
     else:
         print(f"Found {len(list_fits_final)} fits files matching "
-               f"detector {detector}, obstype {obstype} for day {day}")
+              f"detector {detector}, obstype {obstype} for day {day}")
 
     # make a directory to store this date's fits files, at ./yyyymmdd
     path_cwd_yyyymmdd = Path.cwd() / day
