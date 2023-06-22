@@ -3,21 +3,31 @@
 Ross Dobson 2023-06-15, rdobson@ing.iac.es
 """
 
-import os
-from astropy.io import fits
-from pyraf import iraf
 from pathlib import Path
 from datetime import date
+from astropy.io import fits
+from pyraf import iraf
 
 dir_results = Path.cwd() / "Results"
 if not (dir_results.exists() and dir_results.is_dir()):
     dir_results.mkdir()
 
-# get list of image directories
-list_dirs = [d for d in Path.cwd().iterdir() if d.is_dir()]
+# get list of all sub directories
+list_sub_dirs = [d for d in Path.cwd().iterdir() if d.is_dir()]
+
+# check if the subdir is an image dir - check its name is format YYYYMMDD
+list_img_dirs = []
+for sub_dir in list_sub_dirs:
+    dir_name = sub_dir.parts[-1]  # get the name of the image directory
+    try:  # easiest way to check its a valid YYYYMMDD date? Try make a date!
+        date(year=int(dir_name[0:4]), month=int(dir_name[4:6]),
+                     day=int(dir_name[6:8]))
+        list_img_dirs.append(sub_dir)
+    except ValueError:
+        continue  # not an image directory (probably Results or pyraf dir)
 
 # iterate through each image directory
-for img_dir in list_dirs:
+for img_dir in list_img_dirs:
     # lists to store the names of each bias or science file.
     # This will get saved in the image directory, for future reference.
     list_bias = []
@@ -146,4 +156,4 @@ for img_dir in list_dirs:
 
 
     else:
-        print(f"No bias or science images found")
+        print("No bias or science images found")
