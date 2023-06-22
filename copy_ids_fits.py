@@ -44,7 +44,7 @@ def copy_requested_fits(day, detector, obstype):
       FileNotFoundError: if /obsdata/inta/yyyymmdd not found.
 
     Notes:
-      Will not overwrite existing file ./yyyymmdd/rXXXXXXX.fit if it exists.
+      Will not overwrite existing file ./yyyymmdd/rxxxxxxx.fit if it exists.
       This method only exists so that it can be called repeatedly if multiple
       days were requested. I wouldn't call it outside of this script.
     """
@@ -58,17 +58,17 @@ def copy_requested_fits(day, detector, obstype):
     list_of_all_fits = list(path_int_yyyymmdd.glob("*.fit"))
 
     # get list of the .fit that match the requested detector and obstype
-    for f in list_of_all_fits:
-        hdul = fits.open(f)
+    for file in list_of_all_fits:
+        hdul = fits.open(file)
         hdr0 = hdul[0].header
 
         # Check it is an IDS image
         try:
             hdr0_instrume = hdr0["INSTRUME"]
-        except:
-            continue  # probably glance, scratch, AG0 image, ignore
+        except KeyError:
+            continue  # probably glance, scratch, AG0 image - ignore
         if not hdr0_instrume == "IDS":
-            continue  # probably WFC image (or maybe visitor instrument), ignore
+            continue  # probably WFC image, visitor or old instrument - ignore
 
         # check it matches Obstype and Detector
         hdr0_obstype = hdr0["OBSTYPE"]
@@ -76,17 +76,16 @@ def copy_requested_fits(day, detector, obstype):
         if obstype in ("ALL", hdr0_obstype):
             if detector == "BOTH":
                 if hdr0_detector in ("REDPLUS2", "EEV10"):
-                    list_fits_final.append(f)
+                    list_fits_final.append(file)
             elif detector == hdr0_detector:
-                list_fits_final.append(f)
+                list_fits_final.append(file)
 
     if not list_fits_final:
         print(f"No fits files matching detector {detector}, obstype {obstype} "
               f"found for {day}")
         return
-    else:
-        print(f"Found {len(list_fits_final)} fits files matching "
-              f"detector {detector}, obstype {obstype} for day {day}")
+    print(f"Found {len(list_fits_final)} fits files matching "
+          f"detector {detector}, obstype {obstype} for day {day}")
 
     # make a directory to store this date's fits files, at ./yyyymmdd
     path_cwd_yyyymmdd = Path.cwd() / day
@@ -98,9 +97,9 @@ def copy_requested_fits(day, detector, obstype):
 
     # copy the fits files from /obsdata/inta/yyyymmdd to ./yyyymmdd
     len_fits_final = len(list_fits_final)
-    for i,f in enumerate(list_fits_final):
-        intf = path_int_yyyymmdd / f.name
-        cwdf = path_cwd_yyyymmdd / f.name
+    for i,file in enumerate(list_fits_final):
+        intf = path_int_yyyymmdd / file.name
+        cwdf = path_cwd_yyyymmdd / file.name
         if not cwdf.exists():
             print(f"{i+1}/{len_fits_final} Copying {intf} to {cwdf}")
             shutil.copyfile(intf, cwdf)
@@ -142,6 +141,7 @@ def main():
           f"Obstype: {arg_obstype} \n"
           f"Date: {arg_date}\n")
 
+    # Step 2: copy the files
     if not bool_all_dates:
         copy_requested_fits(arg_date, arg_detector, arg_obstype)
         sys.exit(0)
@@ -155,7 +155,7 @@ def main():
         for yyyymmdd in list_days:
             if len(yyyymmdd) == 8:  # check dir name is yyyymmdd, not e.g. config
                 copy_requested_fits(yyyymmdd, arg_detector, arg_obstype)
-    return
+
 
 if __name__ == "__main__":
     main()
