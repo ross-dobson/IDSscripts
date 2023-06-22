@@ -1,6 +1,15 @@
-"""Automatic IRAF analysis of bias and science images.
+#!/usr/bin/env python3
+"""Automated IRAF imstat of IDS EEV10 bias and science images.
 
-Ross Dobson 2023-06-15, rdobson@ing.iac.es
+Script to automatically run IRAF's imstat command on bias and science images
+from the EEV10 detector. Imstat is run on all images with FITS header OBSTYPE
+keyword value of BIAS or TARGET. Imstat runs on the entire image for bias 
+images, and section [145:165,2033:2053] for science images. The script runs on
+all images found in subdirectories of format YYYYMMDD (I recommend using this
+script in tandem with copy_ids_fits.py).
+
+Ross Dobson 2023-06-22
+rdobson@ing.iac.es
 """
 
 from pathlib import Path
