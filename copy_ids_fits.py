@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """Copy IDS files from /obsdata/inta for given detector, obstype and day.
 
 Script to automate copying IDS files from /obsdata/inta. You can choose
@@ -9,7 +8,7 @@ and the date (in format YYYYMMDD, or you can check ALL folders).
 
 Usage: python3 copy_ids_fit.py DETECTOR OBSTYPE YYYYMMDD
 
-Ross Dobson 2023-06-21
+Ross Dobson 2023-06-22
 rdobson@ing.iac.es
 """
 
