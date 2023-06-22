@@ -65,15 +65,23 @@ for img_dir in list_img_dirs:
     # Lets look at the science images (if any)
     if list_science:
 
-        # Save names of science images in img dir as scienceindexYYYYMMMDD.lst
+        # Save list of the science image names, in the image directory: scienceindexYYYYMMMDD.lst
         name_list_science = "scienceindex" + name_dir + ".lst"
         path_list_science = img_dir / name_list_science
-        with open(path_list_science, "w") as fobj:
+        with open(path_list_science, mode="w", encoding="ascii") as fobj:
             print(f"Writing names of science images to {path_list_science}")
             for science in list_science:
                 fobj.write(science + "\n")  # save each image name on a new line
 
-        # make a python list of each image path, for imstat
+        # This section is a bit of a bodge: imstat can only operate in the
+        # current working directory, but each image is in a child directory
+        # YYYYMMDD. So, IRAF needs the relative path YYYYMMDD/rxxxxxxx.fit, for
+        # each image. However, we don't want that long path in the final imstat
+        # results lists, we just want the image name rxxxxxxx.fit alone. So,
+        # once we have the imstat output, we will strip the directory name from
+        # each line before we write to the final list file.
+
+        # Make list of each relative path from the working directory, for imstat
         list_paths_science = [name_dir + "/" + name_science for name_science in list_science]
 
         # Ideally, we'd only run imstat once. But if the list of images is over
@@ -91,42 +99,43 @@ for img_dir in list_img_dirs:
             else:
                 list_results_science.append(imstat_result_science[1])
 
-        # This is a bit of a mess: imstat can only operate in the current
-        # working directory, but each image is in a child directory YYYYMMDD.
-        # So, we need to get a list of the full path YYYYMMDD/rxxxxxxx.fit, to
-        # pass in to iraf.imstat. However, we don't want the full path in the
-        # final results lists, just the image name alone, so we will sanitise
-        # the input and strip the path before we write to the final list file.
+        # Write the imstat results to a .lst file. As mentioned above, we need
+        # to strip the "NAME" column so that it is just rxxxxxxx.fit, not
+        # YYYYMMDD/rxxxxxxx.fit. To do this, we split around the "/" character,
+        # and only keep everything after the "/". However, we don't do this for
+        # the very first line, as that is the imstat column headers, not a line
+        # of results.
         name_results_science = "science" + name_dir + ".lst"
         path_results_science = dir_results / name_results_science
-        with open(path_results_science, "w") as fobj:
+        with open(path_results_science, mode="w", encoding="ascii") as fobj:
             print(f"Writing results of science images to {path_results_science}")
             for i,line in enumerate(list_results_science):
-                if i == 0:
+                if i == 0 :  # the first line is the header. No change needed
                     fobj.write(line + "\n")
-                else:
+                else:  # else, only keep everything after the "/" in the path
                     fobj.write(line.split("/")[-1] + "\n")
 
 
     # Lets look at the bias images (if any)
     if list_bias:
 
-        # Save list of the bias image names, in the image directory: biasindexYYYYMMMDD.lst
+        # Save list of biases, in the image directory: biasindexYYYYMMMDD.lst
         name_list_bias = "biasindex" + name_dir + ".lst"
         path_list_bias = img_dir / name_list_bias
-        with open(path_list_bias, "w") as fobj:
+        with open(path_list_bias, mode="w", encoding="ascii") as fobj:
             print(f"Writing names of bias images to {path_list_bias}")
             for bias in list_bias:
                 fobj.write(bias + "\n")  # save each image name on a new line
 
-        # This is a bit of a mess as imstat can only operate in the current
-        # working directory, but each image is in a child directory YYYYMMDD.
-        # So, we need to get a list of the full path YYYYMMDD/rxxxxxxx.fit, to
-        # pass in to iraf.imstat. However, we don't want the full path in the
-        # final results lists, just the image name alone, so we will sanitise
-        # the input and strip the path before we write to the final list file.
+        # This section is a bit of a bodge: imstat can only operate in the
+        # current working directory, but each image is in a child directory
+        # YYYYMMDD. So, IRAF needs the relative path YYYYMMDD/rxxxxxxx.fit, for
+        # each image. However, we don't want that long path in the final imstat
+        # results lists, we just want the image name rxxxxxxx.fit alone. So,
+        # once we have the imstat output, we will strip the directory name from
+        # each line before we write to the final list file.
 
-        # make a python list of each image path, for imstat
+        # Make list of each relative path from the working directory, for imstat
         list_paths_bias = [name_dir + "/" + name_bias for name_bias in list_bias]
 
         # Ideally, we'd only run imstat once. But if the list of images is over
@@ -144,14 +153,20 @@ for img_dir in list_img_dirs:
             else:
                 list_results_bias.append(imstat_result_bias[1])
 
+        # Write the imstat results to a .lst file. As mentioned above, we need
+        # to strip the "NAME" column so that it is just rxxxxxxx.fit, not
+        # YYYYMMDD/rxxxxxxx.fit. To do this, we split around the "/" character,
+        # and only keep everything after the "/". However, we don't do this for
+        # the very first line, as that is the imstat column headers, not a line
+        # of results.
         name_results_bias = "bias" + name_dir + ".lst"
         path_results_bias = dir_results / name_results_bias
-        with open(path_results_bias, "w") as fobj:
+        with open(path_results_bias, mode="w", encoding="ascii") as fobj:
             print(f"Writing results of bias images to {path_results_bias}")
             for i,line in enumerate(list_results_bias):
-                if i == 0 :  # the first line is the header. We dont need to change this, so write it as is
+                if i == 0 :  # the first line is the header. No change needed
                     fobj.write(line + "\n")
-                else:  # else, we need to strip the image directory from the "name" column of the results, so split around / and take the final element, to get just the image name
+                else:  # else, only keep everything after the "/" in the path
                     fobj.write(line.split("/")[-1] + "\n")
 
 
