@@ -37,7 +37,7 @@ for img_dir in list_img_dirs:
     list_fits_files = list(img_dir.glob("*.fit"))
     if not list_fits_files:
         continue  # if no FITS found, move on to next directory
-    print(f"\nLooking in {img_dir}")
+    print(f"\nFound {len(list_fits_files)} total images in {img_dir}")
 
     for fits_file in list_fits_files:
         # open the FITS header
@@ -49,13 +49,11 @@ for img_dir in list_img_dirs:
             name_img = fits_file.name
 
             if obstype == "BIAS":
-                print(obstype, name_img)
                 list_bias.append(name_img + "[1]")
             elif obstype == "TARGET":
-                print(obstype, name_img)
                 list_science.append(name_img + "[1][145:165,2033:2053]")
             else:
-                print(obstype, name_img)
+                continue
         except KeyError:
             # image may not have an obstype (glance or acquisition camera etc)
             # just catch the exception and move on
@@ -64,6 +62,7 @@ for img_dir in list_img_dirs:
 
     # Lets look at the science images (if any)
     if list_science:
+        print(f"Found {len(list_science)} science images")
 
         # Save list of the science image names, in the image directory: scienceindexYYYYMMMDD.lst
         name_list_science = "scienceindex" + name_dir + ".lst"
@@ -108,7 +107,7 @@ for img_dir in list_img_dirs:
         name_results_science = "science" + name_dir + ".lst"
         path_results_science = dir_results / name_results_science
         with open(path_results_science, mode="w", encoding="ascii") as fobj:
-            print(f"Writing results of science images to {path_results_science}")
+            print(f"Writing imstat results for science images to {path_results_science}")
             for i,line in enumerate(list_results_science):
                 if i == 0 :  # the first line is the header. No change needed
                     fobj.write(line + "\n")
@@ -118,6 +117,7 @@ for img_dir in list_img_dirs:
 
     # Lets look at the bias images (if any)
     if list_bias:
+        print(f"Found {len(list_bias)} bias images")
 
         # Save list of biases, in the image directory: biasindexYYYYMMMDD.lst
         name_list_bias = "biasindex" + name_dir + ".lst"
@@ -162,7 +162,7 @@ for img_dir in list_img_dirs:
         name_results_bias = "bias" + name_dir + ".lst"
         path_results_bias = dir_results / name_results_bias
         with open(path_results_bias, mode="w", encoding="ascii") as fobj:
-            print(f"Writing results of bias images to {path_results_bias}")
+            print(f"Writing imstat results for bias images to {path_results_bias}")
             for i,line in enumerate(list_results_bias):
                 if i == 0 :  # the first line is the header. No change needed
                     fobj.write(line + "\n")
