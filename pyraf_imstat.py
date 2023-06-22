@@ -18,13 +18,13 @@ list_dirs = [d for d in Path.cwd().iterdir() if d.is_dir()]
 
 # iterate through each image directory
 for img_dir in list_dirs:
-    # lists to store the names of each bias or science file. 
+    # lists to store the names of each bias or science file.
     # This will get saved in the image directory, for future reference.
     list_bias = []
     list_science = []
 
     # make a list of all the fits files in this directory
-    list_fits_files = [f for f in img_dir.glob("*.fit")]
+    list_fits_files = list(img_dir.glob("*.fit"))
     if not list_fits_files:
         continue  # if no FITS found, move on to next directory
     print(f"\nLooking in {img_dir}")
@@ -46,28 +46,22 @@ for img_dir in list_dirs:
                 list_science.append(name_img + "[1][145:165,2033:2053]")
             else:
                 print(obstype, name_img)
-        except:
+        except KeyError:
             # image may not have an obstype (glance or acquisition camera etc)
             # just catch the exception and move on
             continue
 
+
     # Lets look at the science images (if any)
     if list_science:
 
-        # Save list of the science image names, in the image directory: scienceindexYYYYMMMDD.lst
+        # Save names of science images in img dir as scienceindexYYYYMMMDD.lst
         name_list_science = "scienceindex" + name_dir + ".lst"
         path_list_science = img_dir / name_list_science
         with open(path_list_science, "w") as fobj:
             print(f"Writing names of science images to {path_list_science}")
             for science in list_science:
                 fobj.write(science + "\n")  # save each image name on a new line
-
-        # This is a bit of a mess as imstat can only operate in the current
-        # working directory, but each image is in a child directory YYYYMMDD.
-        # So, we need to get a list of the full path YYYYMMDD/rxxxxxxx.fit, to
-        # pass in to iraf.imstat. However, we don't want the full path in the
-        # final results lists, just the image name alone, so we will sanitise
-        # the input and strip the path before we write to the final list file.
 
         # make a python list of each image path, for imstat
         list_paths_science = [name_dir + "/" + name_science for name_science in list_science]
@@ -87,15 +81,22 @@ for img_dir in list_dirs:
             else:
                 list_results_science.append(imstat_result_science[1])
 
+        # This is a bit of a mess: imstat can only operate in the current
+        # working directory, but each image is in a child directory YYYYMMDD.
+        # So, we need to get a list of the full path YYYYMMDD/rxxxxxxx.fit, to
+        # pass in to iraf.imstat. However, we don't want the full path in the
+        # final results lists, just the image name alone, so we will sanitise
+        # the input and strip the path before we write to the final list file.
         name_results_science = "science" + name_dir + ".lst"
         path_results_science = dir_results / name_results_science
         with open(path_results_science, "w") as fobj:
             print(f"Writing results of science images to {path_results_science}")
             for i,line in enumerate(list_results_science):
-                if i == 0 :  # the first line is the header. We dont need to change this, so write it as is
+                if i == 0:
                     fobj.write(line + "\n")
-                else:  # else, we need to strip the image directory from the "name" column of the results, so split around / and take the final element, to get just the image name
+                else:
                     fobj.write(line.split("/")[-1] + "\n")
+
 
     # Lets look at the bias images (if any)
     if list_bias:
