@@ -6,7 +6,7 @@ the detector type (REDPLUS2, EEV10, or BOTH detectors), the observation
 type (ARC, BIAS, DARK, FLASH, FLAT, SKY, TARGET, or choose ALL types),
 and the date (in format YYYYMMDD, or you can check ALL folders).
 
-Usage: python3 copy_ids_fit.py DETECTOR OBSTYPE YYYYMMDD
+Usage: python3 copy_ids_fits.py DETECTOR OBSTYPE YYYYMMDD
 
 Ross Dobson 2023-06-22
 rdobson@ing.iac.es
@@ -109,7 +109,7 @@ def copy_requested_fits(day, detector, obstype):
 def main():
     # Step 1: Check command-line arguments
     if len(sys.argv) != 4:
-        print("Usage: get_ids_fit.py detector obstype YYYYMMDD")
+        print("Usage: copy_ids_fits.py detector obstype YYYYMMDD")
         sys.exit(1)
 
     if sys.argv[1] not in ("EEV10", "REDPLUS2", "BOTH"):
