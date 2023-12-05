@@ -1,0 +1,3 @@
+[submodule "tng-rv-standards"]
+	path = tng-rv-standards
+	url = git@github.com:ross-dobson/tng-rv-standards.git
