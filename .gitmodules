@@ -1,3 +1,6 @@
 [submodule "tng-rv-standards"]
 	path = tng-rv-standards
 	url = git@github.com:ross-dobson/tng-rv-standards.git
+[submodule "convert-icrs-proper-motions"]
+	path = convert-icrs-proper-motions
+	url = git@github.com:ross-dobson/ING_ICRS_ProperMotions.git
